@@ -35,8 +35,13 @@ const App = (props) => {
                 <button onClick={() => handleNext()}>next anecdote</button>
             </div>
             <h1>Anecdote with most votes</h1>
-            {props.anecdotes[mostVotes]}
-            <p>has {votes[mostVotes]} votes.</p>
+            {
+            votes.every(item => item === 0) === true ? 'No votes yet.' :
+            <div>
+                {props.anecdotes[mostVotes]}
+                <p>has {votes[mostVotes]} votes.</p>
+            </div>
+            }        
         </div>
     )
 }
