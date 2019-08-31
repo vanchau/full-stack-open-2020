@@ -6,7 +6,7 @@ const Numbers = ({searching, persons}) => {
         <div>
             <h2>Numbers</h2>
             {toShow.map(person => 
-                <p key={person.name}>{person.name} {person.number}</p>
+                <div key={person.name}>{person.name} {person.number}</div>
             )}
         </div>
     );
