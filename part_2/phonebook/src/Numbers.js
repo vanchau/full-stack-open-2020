@@ -1,7 +1,7 @@
 import React from 'react';
 
 const Numbers = ({searching, persons}) => {
-    const toShow = persons.filter(person => person.name.includes(searching))
+    const toShow = persons.filter(person => person.name.toLowerCase().includes(searching.toLowerCase()))
     return (
         <div>
             <h2>Numbers</h2>

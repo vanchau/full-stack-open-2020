@@ -20,7 +20,7 @@ const App = () => {
             name: newName,
             number: newNumber
         }
-        persons.some(person => person.name === newName)
+        persons.some(person => person.name.toLowerCase() === newName.toLowerCase())
         ? alert(`${newName} is already added to phonebook`)
         : setPersons(persons.concat(newPerson)) 
         setNewName('')
