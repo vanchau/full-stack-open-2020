@@ -1,15 +1,12 @@
-import React from 'react';
+import React from "react";
 
 const Input = (props) => {
-    return (
-        <div>
-            {props.text}
-            <input
-                value={props.value}
-                onChange={props.onChange} 
-            />
-        </div>
-    );
+  return (
+    <div>
+      {props.text}
+      <input value={props.value} onChange={props.onChange} />
+    </div>
+  );
 };
 
 export default Input;
