@@ -28,6 +28,15 @@ app.get("/api/info", (req, res) => {
   );
 });
 
+app.get("/api/persons/:id", (req, res) => {
+  const person = persons.find((person) => person.id === Number(req.params.id));
+  if (person) {
+    res.send(person);
+  } else {
+    res.status(400).end();
+  }
+});
+
 const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
