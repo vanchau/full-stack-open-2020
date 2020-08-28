@@ -49,13 +49,22 @@ app.delete("/api/persons/:id", (req, res) => {
 });
 
 app.post("/api/persons", (req, res) => {
-  console.log(req.body);
-  const newPerson = req.body;
-  newPerson.id = parseInt(
-    Math.random(Number.MAX_SAFE_INTEGER) * 10000000000000000
-  );
-  persons = persons.concat(newPerson);
-  res.send(persons);
+  if (!req.body.name || !req.body.number) {
+    res.status(400).json({
+      error: "name or number is missing",
+    });
+  } else if (persons.some((person) => person.name === req.body.name)) {
+    res.status(400).json({
+      error: "name must be unique",
+    });
+  } else {
+    const newPerson = req.body;
+    newPerson.id = parseInt(
+      Math.random(Number.MAX_SAFE_INTEGER) * 10000000000000000
+    );
+    persons = persons.concat(newPerson);
+    res.send(persons);
+  }
 });
 
 const PORT = 3001;
