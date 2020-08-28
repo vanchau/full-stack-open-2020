@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import Filter from './Filter';
 import ContactForm from './ContactForm'
 import Contacts from './Contacts';
+import Notification from './Notification'
 import contactService from '../services/contacts.js'
 
 const App = () => {
@@ -9,6 +10,8 @@ const App = () => {
     const [newName, setNewName] = useState('')
     const [newNumber, setNewNumber] = useState('')
     const [searching, setSearching] = useState('')
+    const [message, setMessage] = useState('')
+    const [dissapear, setDissapear] = useState(false)
 
     useEffect(() => {
         contactService
@@ -16,7 +19,13 @@ const App = () => {
             .then(initialContacts => {
                 setPersons(initialContacts)
             })
-    }, [])
+        if (message) {
+            setTimeout(() => {
+                setDissapear(true)
+            }, 5000)
+        }
+        
+    }, [message])
 
     const addPerson = (event) => {
         event.preventDefault()
@@ -32,12 +41,15 @@ const App = () => {
                 contactService 
                     .update(updatedContact.id, updatedContact)
                     .then(updatedContact => {
+                        setMessage(`Updated ${newName}`) 
                         setPersons(persons.map(person => person.id !== updatedContact.id ? person : updatedContact))
                     })
             }
             else {
                 setNewName('')
                 setNewNumber('')
+                setMessage('')
+                setDissapear(false) 
             }
         }
 
@@ -46,9 +58,11 @@ const App = () => {
             .create(newPerson)
             .then(returnedContact => {
                 setPersons(persons.concat(returnedContact))
-            }) 
+            })
+        setMessage(`Added ${newName}`) 
         setNewName('')
         setNewNumber('')
+        setDissapear(false) 
         }
     }
 
@@ -68,12 +82,17 @@ const App = () => {
         if (window.confirm(`Delete ${name}?`))
         contactService
             .remove(id)
-            .then(setPersons(persons.filter(person => person.id !== id)))
+            .then( () => {
+                setMessage(`Deleted ${name}`)
+                setDissapear(false) 
+                setPersons(persons.filter(person => person.id !== id))
+            })
     }
 
     return (
         <div>
             <h2>Phonebook</h2>
+            <Notification message={message} dissapear={dissapear}/>
             <Filter
                 searching={searching}
                 handleSearchChange={handleSearchChange}
