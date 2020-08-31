@@ -1,9 +1,9 @@
+const Person = require("./models/person");
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
 
 const app = express();
-
 app.use(express.static("build"));
 app.use(express.json());
 app.use(cors());
@@ -16,30 +16,14 @@ app.use(
   morgan(":method :url :status :res[content-length] - :response-time ms :body")
 );
 
-let persons = [
-  {
-    name: "Arto Hellas",
-    number: "123",
-    id: 1,
-  },
-  {
-    name: "Ada Lovelace",
-    number: "456",
-    id: 2,
-  },
-  {
-    name: "Tester Test",
-    number: "789",
-    id: 3,
-  },
-];
-
-app.get("/api/persons", (req, res) => {
-  res.send(persons);
+app.get("/api/persons", async (req, res) => {
+  const persons = await Person.find({});
+  res.json(persons);
 });
 
-app.get("/api/info", (req, res) => {
+app.get("/api/info", async (req, res) => {
   const date = new Date();
+  const persons = await Person.find({});
   res.send(
     `
     <p>Phone book has info for ${persons.length} people</p>
@@ -48,40 +32,74 @@ app.get("/api/info", (req, res) => {
   );
 });
 
-app.get("/api/persons/:id", (req, res) => {
-  const person = persons.find((person) => person.id === Number(req.params.id));
-  if (person) {
-    res.send(person);
-  } else {
-    res.status(400).end();
+app.get("/api/persons/:id", async (req, res, next) => {
+  try {
+    const person = await Person.findById(req.params.id);
+    if (person) {
+      res.json(person);
+    } else {
+      res.status(404).end();
+    }
+  } catch (e) {
+    next(e);
   }
 });
 
-app.delete("/api/persons/:id", (req, res) => {
-  persons = persons.filter((person) => person.id !== Number(req.params.id));
-  res.send(persons);
+app.delete("/api/persons/:id", async (req, res, next) => {
+  try {
+    await Person.findByIdAndRemove(req.params.id, { useFindAndModify: false });
+    res.status(204).end();
+  } catch (e) {
+    next(e);
+  }
 });
 
-app.post("/api/persons", (req, res) => {
+app.post("/api/persons", async (req, res) => {
   if (!req.body.name || !req.body.number) {
     res.status(400).json({
       error: "name or number is missing",
     });
-  } else if (persons.some((person) => person.name === req.body.name)) {
-    res.status(400).json({
-      error: "name must be unique",
-    });
   } else {
-    const newPerson = req.body;
-    newPerson.id = parseInt(
-      Math.random(Number.MAX_SAFE_INTEGER) * 10000000000000000
-    );
-    persons = persons.concat(newPerson);
-    res.send(persons);
+    const person = new Person({
+      name: req.body.name,
+      number: req.body.number,
+    });
+    const savedPerson = await person.save();
+    res.json(savedPerson);
   }
 });
 
-const PORT = process.env.PORT || 3001;
+app.put("/api/persons/:id", async (req, res, next) => {
+  try {
+    const body = req.body;
+
+    const person = {
+      name: body.name,
+      number: body.number,
+    };
+
+    const updated = await Person.findByIdAndUpdate(req.params.id, person, {
+      new: true,
+    });
+    res.json(updated);
+  } catch (e) {
+    next(e);
+  }
+});
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message);
+
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformatted id" });
+  }
+
+  next(error);
+};
+
+app.use(errorHandler);
+
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
