@@ -57,9 +57,8 @@ const App = () => {
             );
           })
           .catch((e) => {
-            setMessage(`${newName} has already been removed`);
+            setMessage(e.response.data.error);
             setError(true);
-            setDissapear(false);
           });
       } else {
         setNewName("");
@@ -69,14 +68,20 @@ const App = () => {
         setError(false);
       }
     } else {
-      contactService.create(newPerson).then((returnedContact) => {
-        setPersons(persons.concat(returnedContact));
-        setMessage(`Added ${newName}`);
-        setNewName("");
-        setNewNumber("");
-        setDissapear(false);
-        setError(false);
-      });
+      contactService
+        .create(newPerson)
+        .then((returnedContact) => {
+          setPersons(persons.concat(returnedContact));
+          setMessage(`Added ${newName}`);
+          setNewName("");
+          setNewNumber("");
+          setDissapear(false);
+          setError(false);
+        })
+        .catch((e) => {
+          setMessage(e.response.data.error);
+          setError(true);
+        });
     }
   };
 
@@ -94,11 +99,17 @@ const App = () => {
 
   const handleDeletetion = (id, name) => {
     if (window.confirm(`Delete ${name}?`))
-      contactService.remove(id).then(() => {
-        setMessage(`Deleted ${name}`);
-        setDissapear(false);
-        setPersons(persons.filter((person) => person.id !== id));
-      });
+      contactService
+        .remove(id)
+        .then(() => {
+          setMessage(`Deleted ${name}`);
+          setDissapear(false);
+          setPersons(persons.filter((person) => person.id !== id));
+        })
+        .catch((e) => {
+          setError(true);
+          setMessage(e.response.data.error);
+        });
   };
 
   return (
